@@ -49,7 +49,7 @@ async def run_smart_audit_analysis(audit_id: int) -> str:
         client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
-            model="gemini-3.5-flash",
+            model="gemini-flash-latest",
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction="You are a senior Internal Audit Specialist and Smart Risk Auditor. Flag discrepancies and layout findings clearly in Markdown.",

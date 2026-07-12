@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { reportApi } from "../../services/domainApi";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export default function ReportsPage() {
   const { data: summary, isLoading } = useQuery({

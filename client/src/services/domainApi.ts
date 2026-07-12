@@ -9,6 +9,7 @@ export interface Booking {
   end_time: string;
   status: string;
   notes: string | null;
+  user_name?: string;
 }
 
 export const bookingApi = {
@@ -30,6 +31,9 @@ export interface MaintenanceRequest {
   technician_name: string | null;
   resolution_notes: string | null;
   created_at: string;
+  asset_name?: string;
+  asset_tag?: string;
+  raised_by_name?: string;
 }
 
 export const maintenanceApi = {

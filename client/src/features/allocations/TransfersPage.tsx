@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { assetApi, type TransferRequest, type Allocation } from "../../services/assetApi";
+import { assetApi, type Allocation } from "../../services/assetApi";
 import { orgApi } from "../../services/domainApi";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
