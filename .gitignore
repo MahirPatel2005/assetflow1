@@ -40,3 +40,5 @@ coverage.xml
 # IDE/Antigravity config
 task.md
 .agents/
+*.tsbuildinfo
+
