@@ -153,55 +153,66 @@ def _execute_tool(name: str, args: dict, user_id: int, department_id: int | None
         return raise_maintenance_request(args["asset_tag"], args["description"], args.get("priority", "Medium"), user_id)
     else:
         return f"Unknown tool: {name}"
-
-
 async def chat_with_assistant(message: str, user_id: int, role: str, department_id: int | None) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
 
     system_instruction = (
         f"You are the AssetFlow AI Assistant. You help employees manage their company assets.\n"
-        f"Active User Context: User ID = {user_id}, Role = {role}, Department ID = {department_id or 'None'}.\n"
-        f"Answer questions clearly. If the user wants to execute an action (list their assets, transfer, book a room, "
-        f"or report damage/raise maintenance), call the appropriate tool. Be helpful, concise, and professional."
+        f"Active User Context: User ID = {user_id}, Role = {role}, Department ID = {department_id or 'None'}.\n\n"
+        f"If the user request requires fetching information or performing an action, you MUST use one of the following actions.\n"
+        f"To use an action, you must respond with a JSON object in the following format (and nothing else):\n"
+        f"{{\n"
+        f"  \"action\": \"<ACTION_NAME>\",\n"
+        f"  \"args\": {{ ... }}\n"
+        f"}}\n\n"
+        f"Available Actions:\n"
+        f"1. \"list_my_assets\" (no arguments) - to check the assets assigned to the active user.\n"
+        f"2. \"request_transfer\" (args: \"asset_tag\" [string], \"target_user_id\" [int], \"reason\" [string]) - to request a transfer of your asset to another employee.\n"
+        f"3. \"book_item\" (args: \"asset_tag\" [string], \"start_time\" [string], \"end_time\" [string]) - to book a shared resource.\n"
+        f"4. \"report_issue\" (args: \"asset_tag\" [string], \"description\" [string], \"priority\" [optional: 'Low', 'Medium', 'High', 'Critical']) - to report an issue/damage on an asset.\n\n"
+        f"If the user's request doesn't require any action, or if you already have the tool output, respond with helpful, concise, and professional natural language."
     )
 
-    contents = [types.Content(role="user", parts=[types.Part.from_text(text=message)])]
+    gen_config = types.GenerateContentConfig(
+        system_instruction=system_instruction,
+        temperature=0.0
+    )
 
     response = client.models.generate_content(
-        model="gemini-3.5-flash",
-        contents=contents,
-        config=types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            tools=[TOOL_DECLARATIONS],
-        ),
+        model="gemini-flash-latest",
+        contents=message,
+        config=gen_config,
     )
 
-    # Handle tool calls if any
-    if response.candidates and response.candidates[0].content.parts:
-        for part in response.candidates[0].content.parts:
-            if part.function_call:
-                fn = part.function_call
-                result = _execute_tool(fn.name, dict(fn.args) if fn.args else {}, user_id, department_id)
+    text = response.text.strip() if response.text else ""
 
-                # Send tool result back for final response
-                contents.append(response.candidates[0].content)
-                contents.append(types.Content(
-                    role="user",
-                    parts=[types.Part.from_function_response(
-                        name=fn.name,
-                        response={"result": result},
-                    )],
-                ))
+    try:
+        cleaned = text
+        if cleaned.startswith("```"):
+            lines = cleaned.split("\n")
+            if lines[0].startswith("```json") or lines[0].startswith("```"):
+                cleaned = "\n".join(lines[1:-1])
+        data = json.loads(cleaned.strip())
+        if isinstance(data, dict) and "action" in data:
+            action = data["action"]
+            args = data.get("args", {})
+            result = _execute_tool(action, args, user_id, department_id)
+            
+            second_contents = [
+                types.Content(role="user", parts=[types.Part.from_text(text=message)]),
+                types.Content(role="model", parts=[types.Part.from_text(text=text)]),
+                types.Content(role="user", parts=[types.Part.from_text(text=f"Action '{action}' execution result:\n{result}")]),
+            ]
+            
+            final_response = client.models.generate_content(
+                model="gemini-flash-latest",
+                contents=second_contents,
+                config=gen_config,
+            )
+            return final_response.text or str(result)
+    except Exception as e:
+        # If parsing or execution fails, fall back to plain text response
+        pass
 
-                final_response = client.models.generate_content(
-                    model="gemini-3.5-flash",
-                    contents=contents,
-                    config=types.GenerateContentConfig(
-                        system_instruction=system_instruction,
-                        tools=[TOOL_DECLARATIONS],
-                    ),
-                )
-                return final_response.text or result
-
-    return response.text or "I'm not sure how to help with that. Could you rephrase?"
+    return text or "I'm not sure how to help with that. Could you rephrase?"
