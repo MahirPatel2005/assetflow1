@@ -169,7 +169,7 @@ async def chat_with_assistant(message: str, user_id: int, role: str, department_
     contents = [types.Content(role="user", parts=[types.Part.from_text(text=message)])]
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=contents,
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
@@ -195,7 +195,7 @@ async def chat_with_assistant(message: str, user_id: int, role: str, department_
                 ))
 
                 final_response = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3.5-flash",
                     contents=contents,
                     config=types.GenerateContentConfig(
                         system_instruction=system_instruction,

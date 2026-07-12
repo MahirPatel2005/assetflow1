@@ -43,7 +43,7 @@ async def run_predictive_maintenance_analysis() -> str:
         client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction="You are an expert Reliability Engineer and Predictive Maintenance AI Analyst. Analyze data deeply and format outputs in structured Markdown.",
