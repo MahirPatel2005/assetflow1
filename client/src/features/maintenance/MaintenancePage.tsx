@@ -7,6 +7,7 @@ import { assetApi } from "../../services/assetApi";
 import { StatusPill } from "../../components/StatusPill";
 import { useAuthStore } from "../../store/authStore";
 import { Sparkles } from "lucide-react";
+import { MarkdownRenderer } from "../../components/MarkdownRenderer";
 
 interface FormValues {
   assetId: number;
@@ -120,14 +121,14 @@ export default function MaintenancePage() {
 
       {/* AI Predictive Maintenance Report */}
       {aiReport && (
-        <div className="rounded-xl border border-indigo-200 bg-indigo-50/30 p-5 shadow-sm space-y-2">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-indigo-200 bg-white p-5 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
             <h3 className="text-sm font-bold text-indigo-800 flex items-center gap-1.5">
               <Sparkles size={15} /> Predictive Maintenance Report
             </h3>
             <button onClick={() => setAiReport(null)} className="text-xs text-slate-500 hover:underline">Dismiss</button>
           </div>
-          <div className="whitespace-pre-wrap text-sm text-slate-700 leading-relaxed">{aiReport}</div>
+          <MarkdownRenderer content={aiReport} />
         </div>
       )}
 

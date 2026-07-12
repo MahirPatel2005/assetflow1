@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { aiApi } from "../../services/domainApi";
 import { Sparkles, Send, Bot, User } from "lucide-react";
 import toast from "react-hot-toast";
+import { MarkdownRenderer } from "../../components/MarkdownRenderer";
 
 interface ChatMessage {
   id: string;
@@ -90,7 +91,11 @@ export default function AIAssistantPage() {
                   : "bg-slate-100 text-slate-800 rounded-tl-none"
               }`}
             >
-              <div className="whitespace-pre-wrap">{m.text}</div>
+              {m.sender === "user" ? (
+                <div className="whitespace-pre-wrap">{m.text}</div>
+              ) : (
+                <MarkdownRenderer content={m.text} />
+              )}
             </div>
             {m.sender === "user" && (
               <div className="h-8 w-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center shrink-0">

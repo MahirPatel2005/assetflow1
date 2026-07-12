@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { auditApi, aiApi, orgApi, type Audit, type AuditItem } from "../../services/domainApi";
 import { useAuthStore } from "../../store/authStore";
-import { Plus, Check, AlertCircle, X, ShieldAlert, ClipboardCheck, Sparkles } from "lucide-react";
+import { Plus, X, ClipboardCheck, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
+import { MarkdownRenderer } from "../../components/MarkdownRenderer";
 
 export default function AuditsPage() {
   const user = useAuthStore((s) => s.user);
@@ -212,14 +213,14 @@ export default function AuditsPage() {
 
               {/* Smart Auditor AI Report */}
               {aiAuditReport && (
-                <div className="rounded-xl border border-indigo-200 bg-indigo-50/30 p-5 space-y-2">
-                  <div className="flex items-center justify-between">
+                <div className="rounded-xl border border-indigo-200 bg-white p-5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
                     <h3 className="text-sm font-bold text-indigo-800 flex items-center gap-1.5">
                       <Sparkles size={15} /> Smart Auditor Report
                     </h3>
                     <button onClick={() => setAiAuditReport(null)} className="text-xs text-slate-500 hover:underline">Dismiss</button>
                   </div>
-                  <div className="whitespace-pre-wrap text-sm text-slate-700 leading-relaxed">{aiAuditReport}</div>
+                  <MarkdownRenderer content={aiAuditReport} />
                 </div>
               )}
             </div>
